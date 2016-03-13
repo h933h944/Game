@@ -1,0 +1,60 @@
+<html>
+    <head>
+        <title>devin的留言板</title>
+    </head>
+    {{queryMessage|default(null)}}
+    <center>
+        <form method="post" name="board" id="leave_message">
+            我的名字是：<input type="text" name="name" maxlength="30" size="30"><br>
+            <textarea cols="50" maxlength="1000" rows="4" placeholder="在這裡輸入留言~~~" name="content"></textarea><br>
+            <button type="submit" name="action" value="createMessage" >送出留言</button> <br>
+            -------------------------------------------------------------------------------
+        </form>
+    </center>
+    {% for row in msg|default(null) %}
+        {{ row.name }} &nbsp;說：
+        <form method = "post" name = {{ row.id }} >
+            {%set alterId = app.request.get('action')%}
+            {% if alterId|default(null) == row.id %}
+                <textarea rows = "4" cols = "40" name="content" maxlength="1000">{{ row.content }}</textarea>
+                 <button type="submit" name="action" value="updateMessage" >更新</button>
+            {% else %}
+                {{ row.content }}<br>
+                <button type="submit" name="action" value="alter" >編輯</button>
+            {% endif %}
+            <input type=hidden name=message_id value={{ row.id }} >
+            <button type="submit" name="action" value="reply" >回覆</button>
+            <button type="submit" name="action" value="deleteMessage" >刪除</button>
+            <br>留言時間是：{{ row.createtime }}呦。
+        </form>
+        {% set replies = replyResult|default(null) %}
+        {% for replyRow in replies %}
+            {% if replyRow.mid == row.id %}
+                &nbsp;&nbsp;&nbsp;&nbsp; {{ replyRow.name }} 說：
+
+                <form method = "post" name = {{ replyRow.id }}> 
+                    <input type = hidden name = message_id value = {{ replyRow.id }}>
+                    {% if alterId|default(null) == replyRow.id %} 
+                        &nbsp;&nbsp;&nbsp;&nbsp;<textarea rows = "3" cols = "30" name = "content" maxlength = "1000">{{ replyRow.content }}</textarea>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <input type = submit name = update value = "更新">
+                    {% else %}
+                        &nbsp;&nbsp;&nbsp;&nbsp; {{ replyRow.content }} <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<button type="submit" name="action" value="alter" >編輯</button>
+                    {% endif %}
+                    <button type="submit" name="action" value="deleteMessage" >刪除</button>
+                    &nbsp;&nbsp;&nbsp;&nbsp; 留言時間是：{{ replyRow.createtime }}呦。
+                </form>
+            {% endif %}
+        {% endfor %}
+        {% if clickReply|default(null) == row.id %}
+            <form method="post" name="reply_message_form">
+                &nbsp;&nbsp;&nbsp;&nbsp;<input type=hidden name=message_id value="{{ row.id }}">
+                <br>&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" name="reply_name" placeholder="name" maxlength="30" size="10" >&nbsp;說:<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<textarea rows = "3" cols = "30" name="reply_msg"></textarea>
+                <button type="submit" name="action" value="reply_submit" >送出留言</button>
+            </form>
+        {% endif %}
+
+        -------------------------------------------------------------------------------------------<br>
+    {% endfor %}
+</html>
